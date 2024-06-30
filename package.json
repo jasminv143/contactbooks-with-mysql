@@ -1,0 +1,19 @@
+{
+  "name": "contactbook",
+  "version": "1.0.0",
+  "description": "contactbook",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "jasmin",
+  "license": "ISC",
+  "dependencies": {
+    "connect-flash": "^0.1.1",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "hbs": "^4.2.0",
+    "mysql": "github:mysqljs/mysql",
+    "nodemon": "^3.1.4"
+  }
+}

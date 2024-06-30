@@ -1,0 +1,31 @@
+{{> header}}
+<div class="container">
+	<form id="register" action="" method="POST">
+		<h1 class="text-center">Registration form</h1>
+		<div class="form-floating mb-3">
+			<input type="text" class="form-control username" id="username" value="" placeholder="enter your username" name="username">
+			<label for="username">Username</label>
+			 <span class="error" style="color:red"> 
+			 </span>
+		</div>
+		<div class="form-floating mb-3">
+			<input type="email" class="form-control email" id="email" value="" placeholder="enter your email" name="email">
+			<label for="email">Email</label>
+			 <span class="error" style="color:red"> </span>
+		</div>
+		<div class="form-floating  mb-3">
+			<input type="password" class="form-control password" id="password" value="" placeholder="enter your password"  name="password">
+			<div class="input-group-text">
+				<input type="checkbox" id="pass"> <label for="pass">&nbsp; Show Password</label>
+			</div>
+			<label for="password">Password</label>
+		</div>
+			<span class="error" style="color:red"></span>
+		<div>
+		    <input type="submit" value="Register" class="btn btn-success">
+		    <input type="reset" name="reset" value="Clear" class="btn btn-primary">
+		</div>
+	</form>
+	<a href="/">Already Registered</a>
+</div>
+{{> footer}}

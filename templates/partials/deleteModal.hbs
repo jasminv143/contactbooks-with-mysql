@@ -1,0 +1,22 @@
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="deleteForm" action="/deleteUser" method="POST">
+                    <div class="form-floating  mb-3">
+                        <input type="password" class="form-control password" id="password" value="" placeholder="enter your password"  name="password">
+                        <div class="input-group-text">
+                            <input type="checkbox" id="pass"><label for="pass">show password</label>
+                        </div>
+                        <label for="password">Password</label>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

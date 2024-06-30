@@ -1,0 +1,30 @@
+{{> header}}
+<div class="container">
+	<div class="row">
+		<form action="/" method="POST" id="login">
+			<h1 class="text-center">Login form</h1>
+			<div class="form-floating mb-3">
+				<input type="text" class="form-control" id="username" value=""placeholder="enter your username" name="username">
+				<label for="username">Username</label>
+				<span class="error" style="color:red"> </span>
+			</div>
+			<div class="form-floating  mb-3">
+				<input type="password" class="form-control password" id="password" value="" placeholder="enter your password"  name="password">
+				<div class="input-group-text">
+					<input type="checkbox" id="pass"><label for="pass">show password</label>
+				</div>
+				<label for="password">Password</label>
+			</div>
+			<span class="error" style="color:red"> </span>
+			<div>
+				<a class="btn btn-danger" href="login.php">Clear</a>
+				<input type="submit" name="submit" value="Login" class="btn btn-success">
+			</div>
+		</form>
+		<a href="register" > Register for Contact book</a>
+	</div>
+	<div class="row"> 
+
+	</div>
+</div>
+{{> footer}}

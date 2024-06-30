@@ -1,0 +1,21 @@
+{{> header}}
+<div class="container">   
+    <div class="heading"> <h1 class="text-center">Profile</h1></div>
+    <div class="row mt-1 Profile">
+        <table>
+            <tr><th>Username</th><td>{{ user.username }}</td></tr>
+            <tr><th>Email</th><td>{{ user.email }}</td></tr>
+
+            <tr>
+                <td colspan="2" style="text-align:center">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+{{> deleteModal}}
+{{> editModal}}
+{{> footer}}

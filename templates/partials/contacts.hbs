@@ -1,0 +1,21 @@
+{{#each contacts}}
+<tr>
+    <td><input class="mark submark" type="checkbox" name="check[]" value="{{this.id}}"></td>
+    <td>{{this.id}}</td>
+    <td>{{this.firstname}}</td>
+    <td>{{this.lastname}}</td>
+    <td>{{this.gender}}</td>
+    <td>{{this.phone_no}}</td>
+    <td>{{this.email}}</td>
+    <td>{{this.city}}</td>
+    <td></td>
+    <td>
+        <a href="/contactform?id={{this.id}}" class="btn btn-primary">Edit</a>
+        <a href="javascript:void(0);" class="btn btn-danger" onclick='confirmdelete({{this.id}})'>Delete</a>
+    </td>
+</tr>
+{{else}}
+    <tr style="text-align:center">
+        <td colspan="12">No records found</td>
+    </tr>
+{{/each}}

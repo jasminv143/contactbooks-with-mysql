@@ -1,0 +1,101 @@
+html, body {
+	height: 100%;
+	margin: 0;
+	background: #eb5a47; 
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+}
+a{text-decoration: none;}
+#index {
+ 	font-size: bold;
+  	background-color: #f2a9c1;    
+}
+ul.topnav {
+	/* border: 2px solid red;*/
+	list-style-type: none;
+	margin: auto auto auto 90px;
+	width: 90%;
+	padding: 0;
+	overflow: hidden;
+	background-color: white;
+}
+ul.topnav li {float: left;}
+ul.topnav li a {
+	margin-left: 25px;
+	font-size: bold;
+	display: block;
+	font-size: large;
+	font-weight: 501;
+	color: black;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+}
+#logout { background-color: red; }
+ul.topnav li a:hover {background-color: #f2dede; color: blue;}
+ul.topnav li a.active {background-color: #04AA6D !important;}
+ul.topnav li.right {float: right;}
+@media screen and (max-width: 600px) 
+{
+	ul.topnav { margin: auto auto auto 50px;}
+	ul.topnav li.right, 
+  	ul.topnav li {float: none;}
+}
+.header{
+	height: auto;
+	width: 100%;
+	background: white;
+}
+.content{
+	min-height: 500px;
+	width: 100%;
+	background: green;
+}
+.footer{
+	text-align: center;
+	height: 50px;
+	width: 100%;
+	background: yellow;
+}
+.flude-container
+	{
+		border: 2px solid red;
+		padding:15px 60px 15px 0px;;
+		border-radius: 15px;
+		background: white;
+	}
+.container
+	{
+		padding:30px ;
+		margin-top: 100px;
+		border: 2px solid red;
+		border-radius: 15px;
+		background: white;
+		//min-height: 600px;
+/*		overflow: auto;*/
+	}
+.Profile
+	{
+		font-size: 20px;
+		width: 70%;
+		margin:auto ;
+	}	
+th.index {width:80%; }
+td.index
+	{
+		padding: 5px;
+		text-align: left;
+	}
+
+button {float: right; }
+.contact{font-size: 18px; }
+tr:hover {background-color: lightyellow; }
+.mark{margin-left: 15px; }
+a{text-decoration: none; }
+ 
+ 	
+ #index {
+ 	font-size: bold;
+  background-color: #f2a9c1;    
+}

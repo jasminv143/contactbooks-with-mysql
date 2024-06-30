@@ -1,0 +1,62 @@
+{{> header}}
+<div class="container">
+	<div class="row mt-1">
+		{{#if isUpdate}}
+			<div class="row text-center"> <h1>Edit Contacts</h1></div>
+		{{else}}
+			<div class="row text-center"> <h1>Add New Contacts</h1></div>
+		{{/if}}
+		<form  method="post" action="/contactform" id="add_edit" >
+			{{#if isUpdate}}
+				<input type="hidden" class="form-control" value="{{currentRecord.id}}" name="id">
+			{{/if}}
+			<div class="form-floating mb-3">
+				<input type="text" class="form-control" value="{{#if isUpdate}} {{currentRecord.firstname}} {{/if}}" id="firstname" placeholder="Enter Firstname" name="firstname">
+				<label for="firstname">Firstname</label>
+				<span class="error" style="color:red"></span>
+			</div>
+			<div class="form-floating mb-3">
+				<input type="text" class="form-control" value="{{#if isUpdate}} {{currentRecord.lastname}} {{/if}}" id="lastname" placeholder="Enter Lastname" name="lastname">
+				<label for="lastname">Lastname</label>
+				<span class="error" style="color:red"></span>
+			</div>
+			<div class="form-floating mb-3" >
+				<input type="text" class="form-control" id="phone_no" value="{{#if isUpdate}} {{currentRecord.phone_no}} {{/if}}" placeholder="Enter Phone Number" name="phone_no">
+				<label for="phone_no">Phone Number</label>
+				<span class="error" style="color:red"></span>
+			</div>
+			<div class="form-floating mb-3">
+				<input type="email" class="form-control" id="email" value="{{#if isUpdate}} {{currentRecord.email}} {{/if}}" placeholder="Enter Email" name="email">
+				<label for="email">Email</label>
+				<span class="error" style="color:red"></span>
+			</div>
+			<div class="border mb-3">
+				<label class="form-check-label" for="gender">Gender </label>
+				<div class="form-check form-check-inline">
+				  <input class="form-check-input" type="radio" name="gender" value="Male"  id="male" {{#if (eq currentRecord.gender "Male")}} checked {{/if}}>
+				  <label class="form-check-label" for="male">Male</label>
+				</div>
+				<div class="form-check form-check-inline ">
+				  <input class="form-check-input" type="radio" name="gender" value="Female" id="famale" {{#if (eq currentRecord.gender "Female")}} checked {{/if}}>
+				  <label class="form-check-label" for="famale">Female</label>
+				</div>
+				<div class="form-check form-check-inline ">
+				  <input class="form-check-input" type="radio" name="gender" value="Other" id="other"  {{#if (eq currentRecord.gender "Other")}} checked {{/if}}>
+				  <label class="form-check-label" for="other">Other</label>
+				</div>
+				<span class="error" style="color:red"></span>
+			</div>
+			<div class="form-floating mb-3">
+				<input type="text" class="form-control" id="city" value="{{#if isUpdate}} {{currentRecord.city}} {{/if}}" placeholder="Enter Your City" name="city">
+				<label for="city">City</label>
+				<span class="error" style="color:red"></span>
+			</div>
+			<div>
+	    		<input type="submit" value="Save" class="btn btn-success">
+	    		<input type="reset" value="Reset" class="btn btn-danger">
+			</div>
+		</form>
+	</div>   			
+</div>
+{{> footer}}
+	

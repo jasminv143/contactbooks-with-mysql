@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>      
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Contact Book</title>
+	<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC' crossorigin='anonymous'>
+	<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js' integrity='sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM' crossorigin='anonymous'></script>
+	<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js'></script>
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+	<script src='https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js'></script>
+	<script src='https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js'></script>
+
+	<link rel="stylesheet" href="media/css/style.css">
+	<script src="media/js/javascript.js"></script>
+	
+</head>
+<body>
+	<div class="flude-container">
+		<div class="row ">
+			<ul class="topnav">
+				<li><a class="nav-link "  href="profile.php" id="index">Welcome User</a></li>
+				<li><a class="nav-link" href="home.php" id="indexone">HOME</a></li>
+				<li><a class="nav-link "href="contactform.php" id="add" >ADD CONTACT</a></li>
+				<li class="right">
+					
+					<!-- <a class="nav-link" id="logout"  href="javascript:void(0);" onclick="confirmLogout()" >Logout</a> -->
+					
+					<a class="nav-link" id="logout"  href="login.php">Login</a>
+				</li>
+				<li class="right">
+					<a href="javascript:void(0);" id='ct6' class="" ></a>
+				</li>
+			</ul>
+		</div>
+	</div>  
+	<div class="mt-1" >
+		<div class="alert alert-success" id="successalert" role="alert">    
+		</div>
+		
+		<div class="alert alert-danger" id="dangeralert" role="alert">    
+		</div>
+	</div> 
+	<div class="container">
+		<form id="register" action="" method="POST">
+			<h1 class="text-center">Registration form</h1>
+			<div class="form-floating mb-3" >
+				<input type="text" class="form-control name"  value="" id="name" placeholder="enter your name" name="name">
+				<label for="name">Name</label>
+				<span class="error" style="color:red"> </span>
+			</div>
+			<div class="form-floating mb-3">
+				<input type="text" class="form-control username" id="username" value="" placeholder="enter your username" name="username">
+				<label for="username">Username</label>
+				<span class="error" style="color:red"> 
+				</span>
+			</div>
+			<div class="form-floating mb-3">
+				<input type="email" class="form-control email" id="email" value="" placeholder="enter your email" name="email">
+				<label for="email">Email</label>
+				<span class="error" style="color:red"> </span>
+			</div>
+			<div class="form-floating  mb-3">
+				<input type="password" class="form-control password" id="password" value="" placeholder="enter your password"  name="password">
+				<div class="input-group-text">
+					<input type="checkbox" id="pass"> <label for="pass">&nbsp; Show Password</label>
+				</div>
+				<label for="password">Password</label>
+			</div>
+			<span class="error" style="color:red">  </span>
+			<div>
+				<input type="reset" name="reset" value="reset" class="btn btn-primary">
+				<input type="submit" name="submit" value="Register" class="btn btn-primary">
+			</div>
+		</form>
+		<a href="login.php">Already Registered</a>
+	</div>
+	<div class="footer">
+		<br/>
+		<p>All right reserved with copyright @ Invigorate Systems</p>
+	</div>  
+</body>
+</html>
