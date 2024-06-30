@@ -46,19 +46,18 @@
             </table>
 	 	</form>
 	 	 <nav>
-            {{#if false}}
             <ul class="pagination justify-content-center" id="paginationLinks">
                 {{#if (gt currentPage 1)}}
                     <li class="page-item"><a class="page-link" href="/home?page={{subtract currentPage 1}}&limit={{limit}}">Previous</a></li>
                 {{/if}}
-                {{#each paginationLinks}}
-                    <li class="page-item {{#if active}}active{{/if}}"><a class="page-link" href="/home?page={{number}}&limit={{../limit}}">{{number}}</a></li>
+                {{#each (paginationLinks currentPage totalPages)}}
+                    <li class="page-item {{#if active}}active{{/if}}"><a class="page-link" href="{{#if active}} javascript:void(0); {{else}} /home?page={{number}}&limit={{../limit}} {{/if}}">{{number}}</a></li>
                 {{/each}}
                 {{#if (lt currentPage totalPages)}}
                     <li class="page-item"><a class="page-link" href="/home?page={{add currentPage 1}}&limit={{limit}}">Next</a></li>
                 {{/if}}
             </ul>
-            {{/if}}
+            
         </nav>
 	</div>
 </div>

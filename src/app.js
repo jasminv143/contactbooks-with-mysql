@@ -36,6 +36,30 @@ app.use((req, res, next) => {
 hbs.registerHelper('eq', function (a, b) {
     return a == b;
 });
+hbs.registerHelper('gt', function (a, b) {
+    return a > b;
+});
+hbs.registerHelper('lt', function (a, b) {
+    return a < b;
+});
+
+hbs.registerHelper('add', function (a, b) {
+    return a + b;
+});
+hbs.registerHelper('subtract', function (a, b) {
+    return a - b;
+});
+hbs.registerHelper('paginationLinks', function(currentPage, totalPages) {
+    let links = [];
+    for (let i = 1; i <= totalPages; i++) {
+        links.push({
+            number: i,
+            active: i === currentPage
+        });
+    }
+    return links;
+});
+
 
 hbs.registerHelper('isActive', function(currentUrl, linkUrl) {
     return currentUrl === linkUrl ? 'active' : '';
@@ -107,7 +131,7 @@ app.post('/register', function (req, res) {
 })
 
 app.get('/home', function (req, res) {
-    if (req.session.user) {
+   /* if (req.session.user) {
         const userId = req.session.user.id;
         con.pool.query('SELECT * FROM contacts WHERE uid = ? ', [userId], (err, results) => {
             if (err) {
@@ -123,38 +147,36 @@ app.get('/home', function (req, res) {
     } else {
         req.flash('errorMessage', 'Please Login.');
         res.redirect('/');
-    }
+    }*/
     // const userId = req.session.user.id;
-    // const userId = 1;
-    // const page = parseInt(req.query.page) || 1;
-    // const limit = parseInt(req.query.limit) || 10;
-    // const offset = (page - 1) * limit;
+    const userId = 1;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
 
-    // con.pool.query('SELECT COUNT(*) AS count FROM contacts WHERE uid = ?', [userId], (err, countResults) => {
-    //     if (err) {
-    //         console.error(err);
-    //         req.flash('errorMessage', 'Failed to load contacts.');
-    //         return res.redirect('/');
-    //     }
-
-    //     const totalContacts = countResults[0].count;
-    //     const totalPages = Math.ceil(totalContacts / limit);
-
-    //     con.pool.query('SELECT * FROM contacts WHERE uid = ? LIMIT ? OFFSET ?', [userId, limit, offset], (err, results) => {
-    //         if (err) {
-    //             console.error(err);
-    //             req.flash('errorMessage', 'Failed to load contacts.');
-    //             return res.redirect('/');
-    //         }
-
-    //         res.render('home', {
-    //             headerTitle: "ContactBook - Home",
-    //             contacts: results,
-    //             currentPage: page,
-    //             totalPages: totalPages
-    //         });
-    //     });
-    // });
+    con.pool.query('SELECT COUNT(*) AS count FROM contacts WHERE uid = ?', [userId], (err, countResults) => {
+        if (err) {
+            console.error(err);
+            req.flash('errorMessage', 'Failed to load contacts.');
+            return res.redirect('/');
+        }
+        const totalContacts = countResults[0].count;
+        const totalPages = Math.ceil(totalContacts / limit);
+        con.pool.query('SELECT * FROM contacts WHERE uid = ? LIMIT ? OFFSET ?', [userId, limit, offset], (err, results) => {
+            if (err) {
+                console.error(err);
+                req.flash('errorMessage', 'Failed to load contacts.');
+                return res.redirect('/');
+            }
+            res.render('home', {
+                headerTitle: "ContactBook - Home",
+                contacts: results,
+                currentPage: page,
+                totalPages: totalPages,
+                limit:limit
+            });
+        });
+    });
 });
 
 app.get('/contactform', function (req, res) {

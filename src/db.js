@@ -1,14 +1,23 @@
 const mysql = require('mysql');
 
 // Create a connection pool for initial database creation
+
+
 const pool = mysql.createPool({
+    host: 'localhost',
+    user: 'jasmin',
+    password: 'Jasmin@123',
+    database: "node_contactBook"
+});
+
+const setupConnection = mysql.createPool({
     host: 'localhost',
     user: 'jasmin',
     password: 'Jasmin@123'
 });
 
 // Connect to MySQL server and create database if not exists
-pool.getConnection((err, connection) => {
+setupConnection.getConnection((err, connection) => {
     if (err) {
         console.error('Database connection failed:', err);
         return;
