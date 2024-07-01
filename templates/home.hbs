@@ -25,17 +25,69 @@
         </div>
     </div>
 	<div class="row mt-3 contact">	
-	 	<form method='post' action='/deleteContacts' id="deleteContacts" >
+	 	<!-- <form method='post' action='/deleteContacts' id="deleteContacts" > -->
 	 	    <table border=1 width='100%' class='p-2 ' id="contactsTable">
 				 	{{> contacts}}
             </table>
-	 	</form>
+	 	<!-- </form> -->
 	</div>
 </div>
 
 <script>
 $(document).ready(function() {
+
+     $(document).on('click', '.delete-contact', function() {
+        if (confirm("Are you sure you want to delete this record?")) {
+            const contactId = $(this).data('id');
+            $.ajax({
+                url: '/deleteContact',
+                method: 'DELETE',
+                data: { id: contactId },
+                success: function(response) {
+                    addMessage(response.status, response.message);
+                    fetchData(); 
+                },
+                error: function(err) {
+                    addMessage("error", 'Error deleting contact');
+                }
+            });
+        }
+    });
+    $('#deleteSelected').on('click', function(e) {
+        e.preventDefault();
+        if (confirm("Are you sure you want to delete selected contacts?")) {
+            const selectedContacts = $('.submark:checked').map(function() {
+                return this.value;
+            }).get();
+
+            $.ajax({
+                url: '/deleteContacts',
+                method: 'DELETE',
+                data: { ids: selectedContacts },
+                success: function(response) {
+                    addMessage(response.status, response.message);
+                    fetchData(); 
+                },
+                error: function(err) {
+                    addMessage("error", 'Error deleting contact');
+                }
+            });
+        }
+    });
     
+    function addMessage(status,message){
+        if(status=="error"){
+            html =  '<div class="mt-1"> <div class="alert alert-danger" id="dangeralert" role="alert">'+message+'</div> </div>';
+        }else{
+            html = '<div class="mt-1"><div class="alert alert-success" id="successalert" role="alert">'+message+'</div></div>';
+        }
+        $("#header").after(html);
+        setTimeout(function() {
+            $('.alert-success').fadeOut();
+            $('.alert-danger').fadeOut();
+        }, 10000); 
+    }
+
     function addOrReplaceUrlParameter(key, value) {
         let url = new URL(window.location.href);
         if (url.searchParams.has(key)) {
@@ -101,6 +153,7 @@ $(document).ready(function() {
             },
             success: function(data) {
                 $('#contactsTable').html(data);
+                updateDeleteButtonState();
 
             },
             error: function(err) {

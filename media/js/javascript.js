@@ -2,11 +2,7 @@ function confirmLogout() {
 	if (confirm("Are you sure you want to logout?") == true) 
 		{window.location.href = "/logout"; }
 }
-function confirmdelete(id){
-	var del=confirm("Are you sure you want to delete this record?");
-	if (del==true)
-        {window.location.href="/deleteContact?id="+id; }
-}
+
 
 function display_ct6() 
 {
@@ -52,9 +48,10 @@ $(document).ready(function()
       	if (isChecked) {$('.new_password').attr('type','text');}
       	else {$('.new_password').attr('type','Password'); }
     });
- //  	$("#successalert").fadeTo(1000, 500).slideUp(500, function(){
- //    	$("#successalert").slideUp(500);
-	// });
+  	setTimeout(function() {
+        $('.alert-success').fadeOut();
+        $('.alert-danger').fadeOut();
+    }, 10000); 
 
 	// $("#login").validate(
 	// {

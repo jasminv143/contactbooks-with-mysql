@@ -26,7 +26,7 @@
             <td></td>
             <td>
                 <a href="/contactform?id={{this.id}}" class="btn btn-primary">Edit</a>
-                <a href="javascript:void(0);" class="btn btn-danger" onclick='confirmdelete({{this.id}})'>Delete</a>
+                <a href="javascript:void(0);" class="btn btn-danger delete-contact" data-id="{{this.id}}">Delete</a>
             </td>
         </tr>
     {{else}}

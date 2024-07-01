@@ -277,58 +277,42 @@ app.post('/contactform', function (req, res) {
     }
 });
 
-app.get('/deleteContact', function (req, res) {
-    if (req.session.user) {
-        const contactId = req.query.id;
-        const conditions = {id:contactId,uid:req.session.user.id };
-    
-        con.deleteRecord("contacts", conditions).then(results => {
+app.delete('/deleteContact', (req, res) => {
+    const contactId = req.body.id;
+    const userId = req.session.user.id;
+
+    con.deleteRecord("contacts", { id: contactId, uid: userId })
+        .then(results => {
             if (results.affectedRows > 0) {
-                req.flash('successMessage', 'Contact deleted successfully.');
+                res.json({status:"success", message: 'Contact deleted successfully.' });
             } else {
-                req.flash('errorMessage', 'Contact not found or you do not have permission to delete this contact.');
+                res.json({status:"error", message: 'Contact not found or you do not have permission to delete this contact.' });
             }
-            res.redirect('/home');
-
-        }).catch(err => {
+        })
+        .catch(err => {
             console.error(err);
-            req.flash('errorMessage', 'Failed to delete contact.');
-            return res.redirect('/home');
+            res.json({status:"error", message: 'Failed to delete contact.' });
         });
-    } else {
-        req.flash('errorMessage', 'Please Login.');
-        res.redirect('/');
-    }
 });
+app.delete('/deleteContacts', (req, res) => {
+    const contactIds = req.body.ids;
+    const userId = req.session.user.id;
 
-app.post('/deleteContacts', (req, res) => {
-    const { check } = req.body;
-    
-    if (!check || !Array.isArray(check) || check.length === 0) {
-        req.flash('errorMessage', 'No contacts selected for deletion.');
-        return res.redirect('/home');
-    }
+    const conditions = { id: contactIds, uid: userId };
 
-    // Convert check array values to integers (IDs)
-    const contactIds = check.map(id => parseInt(id));
-    var userId = req.session.user.id;
-
-    const conditions = {id : contactIds,uid: userId };
-
-    con.deleteRecord("contacts", conditions).then(results => {
-        const affectedRows = results.affectedRows;
-        if (affectedRows > 0) {
-            req.flash('successMessage', `${affectedRows} contact(s) deleted successfully.`);
-        } else {
-            req.flash('errorMessage', 'No contacts were deleted.');
-        }
-        res.redirect('/home');
-    }).catch(err => {
-        console.error(err);
-        req.flash('errorMessage', 'Failed to delete contacts.');
-        res.redirect('/home');
-    });
-
+    con.deleteRecord("contacts", conditions)
+        .then(results => {
+            const affectedRows = results.affectedRows;
+            if (affectedRows > 0) {
+                res.json({status:"success", message: `${affectedRows} contact(s) deleted successfully.` });
+            } else {
+                res.json({ status:"error", message: 'No contacts were deleted.' });
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            res.json({status:"error", message: 'Failed to delete contacts.' });
+        });
 });
 
 app.get('/profile', function (req, res) {
@@ -410,40 +394,7 @@ app.post('/profileEdit', (req, res) => {
     });
 });
 
-// app.get('/fetchSortedContacts', (req, res) => {
-//     const { field, order } = req.query;
-//     const validFields = ['id', 'firstname', 'lastname', 'gender', 'phone_no', 'email', 'city'];
 
-//     if (!validFields.includes(field) || !['asc', 'desc'].includes(order)) {
-//         return res.status(400).send('Invalid sort field or order');
-//     }
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
-//     const offset = (page - 1) * limit;
-//     const userId = req.session.user.id;
-//     con.pool.query('SELECT COUNT(*) AS count FROM contacts WHERE uid = ?', [userId], (err, countResults) => {
-//         if (err) {
-//             console.error(err);
-//             req.flash('errorMessage', 'Failed to load contacts.');
-//             return res.redirect('/');
-//         }
-//         const totalContacts = countResults[0].count;
-//         const totalPages = Math.ceil(totalContacts / limit);
-//         const sql = `SELECT * FROM contacts WHERE uid = ${userId} ORDER BY ${field} ${order} LIMIT ${limit} OFFSET ${offset}`;
-//         con.pool.query(sql, (err, results) => {
-//             if (err) {
-//                 console.error('Error fetching contacts:', err);
-//                 return res.status(500).json({ error: 'Error fetching contacts' });
-//             }
-//             res.render(path.join(__dirname, '../templates/partials/contacts'), {
-//                 contacts: results,
-//                 totalPages: totalPages,
-//                 limit:limit
-//             });
-
-//         });
-//     });
-// });
 
 app.get('/allinone', (req, res) => {
     if(!req.session.user){
@@ -496,40 +447,6 @@ app.get('/allinone', (req, res) => {
         });
     }
 });
-// app.post('/search', (req, res) => {
-//     const { field, searchField } = req.body;
-//     const userId = req.session.user.id;
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
-//     const offset = (page - 1) * limit;
-//      con.pool.query('SELECT COUNT(*) AS count FROM contacts WHERE uid = ?', [userId], (err, countResults) => {
-//         if (err) {
-//             console.error(err);
-//             req.flash('errorMessage', 'Failed to load contacts.');
-//             return res.redirect('/');
-//         }
-//         const totalContacts = countResults[0].count;
-//         const totalPages = Math.ceil(totalContacts / limit);
-//         const query = `SELECT * FROM contacts WHERE uid = ${userId} AND ${field} LIKE '%${searchField}%' LIMIT ${limit} OFFSET ${offset}`;
-//         con.pool.query(query, (err, results) => {
-//             if (err) {
-//                 console.error(err);
-//                 req.flash('errorMessage', 'An error occurred while searching.');
-//                 return res.redirect('/home');
-//             }
-            
-//             res.render('partials/contacts', { contacts: results,totalPages: totalPages, limit:limit }, (err, html) => {
-//                 if (err) {
-//                     console.error(err);
-//                     req.flash('errorMessage', 'An error occurred while rendering the results.');
-//                     return res.redirect('/home');
-//                 }
-//                 res.send(html);
-//             });
-//         });
-//     });
-// });
-
 
 app.get('/logout', function (req, res) {
     if (!req.session.user) {
