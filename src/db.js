@@ -5,15 +5,15 @@ const mysql = require('mysql');
 
 const pool = mysql.createPool({
     host: 'localhost',
-    user: 'jasmin',
-    password: 'Jasmin@123',
+    user: 'invigorate',
+    password: 'Invi@123',
     database: "node_contactBook"
 });
 
 const setupConnection = mysql.createPool({
     host: 'localhost',
-    user: 'jasmin',
-    password: 'Jasmin@123'
+    user: 'invigorate',
+    password: 'Invi@123'
 });
 
 // Connect to MySQL server and create database if not exists
@@ -104,5 +104,45 @@ const insertRecord = (tableName, insertData) => {
         });
     });
 };
+const deleteRecord = (tableName, conditions) => {
+    return new Promise((resolve, reject) => {
+        if (!tableName || typeof conditions !== 'object' || Object.keys(conditions).length === 0) {
+            reject(new Error('Invalid arguments provided.'));
+            return;
+        }
 
-module.exports = { pool,insertRecord };
+        const keys = Object.keys(conditions);
+        const values = Object.values(conditions);
+
+        // Construct the WHERE clause dynamically
+        const whereClause = keys.map(key => {
+            if (Array.isArray(conditions[key])) {
+                // Handle array values for IN clause
+                return `${key} IN (${conditions[key].map(() => '?').join(', ')})`;
+            } else {
+                // Handle single value for equality check
+                return `${key} = ?`;
+            }
+        }).join(' AND ');
+
+        const query = `DELETE FROM ${tableName} WHERE ${whereClause}`;
+
+        // Flatten the values array if conditions[key] is an array
+        const flattenedValues = keys.reduce((acc, key) => {
+            if (Array.isArray(conditions[key])) {
+                return [...acc, ...conditions[key]];
+            } else {
+                return [...acc, conditions[key]];
+            }
+        }, []);
+
+        pool.query(query, flattenedValues, (err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+};
+module.exports = { pool,insertRecord,deleteRecord };

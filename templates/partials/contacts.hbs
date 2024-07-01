@@ -1,21 +1,60 @@
-{{#each contacts}}
-<tr>
-    <td><input class="mark submark" type="checkbox" name="check[]" value="{{this.id}}"></td>
-    <td>{{this.id}}</td>
-    <td>{{this.firstname}}</td>
-    <td>{{this.lastname}}</td>
-    <td>{{this.gender}}</td>
-    <td>{{this.phone_no}}</td>
-    <td>{{this.email}}</td>
-    <td>{{this.city}}</td>
-    <td></td>
-    <td>
-        <a href="/contactform?id={{this.id}}" class="btn btn-primary">Edit</a>
-        <a href="javascript:void(0);" class="btn btn-danger" onclick='confirmdelete({{this.id}})'>Delete</a>
-    </td>
-</tr>
-{{else}}
-    <tr style="text-align:center">
-        <td colspan="12">No records found</td>
-    </tr>
-{{/each}}
+    <thead role='rowgroup'>
+        <tr>
+            <th ><input class='mark' type=checkbox id=checkAll></th>
+            <th><a href="#" class="sort" data-field="id">Id</a></th> 
+            <th><a href="#" class="sort" data-field="firstname">Firstname</a></th> 
+            <th><a href="#" class="sort" data-field="lastname">Lastname</a></th> 
+            <th><a href="#" class="sort" data-field="gender">Gender</a></th> 
+            <th><a href="#" class="sort" data-field="phone_no">Phone Number</a></th> 
+            <th><a href="#" class="sort" data-field="email">Email</a></th> 
+            <th><a href="#" class="sort" data-field="city">City</a></th> 
+            <th><a href="#" class="sort" data-field="time">Time</a></th> 
+            <th colspan='2' align='center' class='text-center'>Action</th> 
+        </tr>
+    </thead>
+    <tbody >
+    {{#each contacts}}
+        <tr>
+            <td><input class="mark submark" type="checkbox" name="check[]" value="{{this.id}}"></td>
+            <td>{{this.id}}</td>
+            <td>{{this.firstname}}</td>
+            <td>{{this.lastname}}</td>
+            <td>{{this.gender}}</td>
+            <td>{{this.phone_no}}</td>
+            <td>{{this.email}}</td>
+            <td>{{this.city}}</td>
+            <td></td>
+            <td>
+                <a href="/contactform?id={{this.id}}" class="btn btn-primary">Edit</a>
+                <a href="javascript:void(0);" class="btn btn-danger" onclick='confirmdelete({{this.id}})'>Delete</a>
+            </td>
+        </tr>
+    {{else}}
+        <tr style="text-align:center">
+            <td colspan="12">No records found</td>
+        </tr>
+    {{/each}}
+    </tbody>
+    {{#if contacts.length}}
+    <tfoot>
+        <tr>
+            <td colspan="10">
+                <nav>
+                    <ul class="pagination justify-content-center" id="paginationLinks">
+                        {{#if (gt currentPage 1)}}
+                            <li class="page-item"><a class="page-link" data-page="{{subtract currentPage 1}}" data-limit="{{limit}}" href="/home?page={{subtract currentPage 1}}&limit={{limit}}">Previous</a></li>
+                        {{/if}}
+                        {{#each (paginationLinks currentPage totalPages)}}
+                            <li class="page-item {{#if active}}active{{/if}}">
+                                <a class="page-link" data-page="{{number}}" data-limit="{{../limit}}" href="{{#if active}} javascript:void(0); {{else}} /home?page={{number}}&limit={{../limit}} {{/if}}">{{number}}</a>
+                            </li>
+                        {{/each}}
+                        {{#if (lt currentPage totalPages)}}
+                            <li class="page-item"><a class="page-link" data-page="{{add currentPage 1}}" data-limit="{{limit}}" href="/home?page={{add currentPage 1}}&limit={{limit}}">Next</a></li>
+                        {{/if}}
+                    </ul>
+                </nav>
+            </td>
+        </tr>
+    </tfoot>
+    {{/if}}

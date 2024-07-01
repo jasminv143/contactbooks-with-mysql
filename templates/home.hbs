@@ -4,8 +4,8 @@
 	<div class="row m-0 mt-3">
 		<div class="col-6">
             <form id="searchForm" class="d-flex" method="post">	
-            	<select name="field" class="form-select" required>
-            		<option>Field</option>
+            	<select id="searchField" class="form-select" required>
+            		<option value="">Field</option>
 					<option value="id">Id </option> 
 					<option value="firstname">Firstname </option> 
 					<option value="lastname">Lastname </option> 
@@ -15,61 +15,65 @@
 					<option value="city">City </option> 
 					<option value="time">Time </option> 
             	</select>
-            	<input type="text" name="searchField" id="searchField" placeholder="Search..." class="form-control" required>
+            	<input type="text"  id="search-q" placeholder="Search..." class="form-control" required>
             	<button type="submit" class="nav-item btn btn-primary ">Search</button>
 			</form>
         </div>
 		<div class="col-6">
         	<button type="submit" form="deleteContacts" id="deleteSelected" onclick="return confirm('Are you sure you want to delete selected contacts?');" disabled="" class="nav-item  btn btn-danger float-end">Delete Selected</button>
+            <button id="resetAll" style="display: none;" class="btn btn-danger">Reset ALL</button>
         </div>
     </div>
 	<div class="row mt-3 contact">	
 	 	<form method='post' action='/deleteContacts' id="deleteContacts" >
-	 		<table border=1 width='100%' class='p-2 ' >
-            	<thead role='rowgroup'>
-	 				<tr>
-	                    <th ><input class='mark' type=checkbox id=checkAll></th>
-		                <th><a href="#" class="sort" data-field="id">Id</a></th> 
-		                <th><a href="#" class="sort" data-field="firstname">Firstname</a></th> 
-		                <th><a href="#" class="sort" data-field="lastname">Lastname</a></th> 
-		                <th><a href="#" class="sort" data-field="gender">Gender</a></th> 
-		                <th><a href="#" class="sort" data-field="phone_no">Phone Number</a></th> 
-		                <th><a href="#" class="sort" data-field="email">Email</a></th> 
-		                <th><a href="#" class="sort" data-field="city">City</a></th> 
-		                <th><a href="#" class="sort" data-field="time">Time</a></th> 
-		                <th colspan='2' align='center' class='text-center'>Action</th> 
-            		</tr>
-            	</thead>
-            	<tbody id="contactsTableBody">
+	 	    <table border=1 width='100%' class='p-2 ' id="contactsTable">
 				 	{{> contacts}}
-            	</tbody>
             </table>
 	 	</form>
-	 	 <nav>
-            <ul class="pagination justify-content-center" id="paginationLinks">
-                {{#if (gt currentPage 1)}}
-                    <li class="page-item"><a class="page-link" href="/home?page={{subtract currentPage 1}}&limit={{limit}}">Previous</a></li>
-                {{/if}}
-                {{#each (paginationLinks currentPage totalPages)}}
-                    <li class="page-item {{#if active}}active{{/if}}"><a class="page-link" href="{{#if active}} javascript:void(0); {{else}} /home?page={{number}}&limit={{../limit}} {{/if}}">{{number}}</a></li>
-                {{/each}}
-                {{#if (lt currentPage totalPages)}}
-                    <li class="page-item"><a class="page-link" href="/home?page={{add currentPage 1}}&limit={{limit}}">Next</a></li>
-                {{/if}}
-            </ul>
-            
-        </nav>
 	</div>
 </div>
 
 <script>
 $(document).ready(function() {
     
+    function addOrReplaceUrlParameter(key, value) {
+        let url = new URL(window.location.href);
+        if (url.searchParams.has(key)) {
+            url.searchParams.set(key, value); 
+        } else {
+            url.searchParams.append(key, value); 
+        }
+        window.history.replaceState({ path: url.href }, '', url.href);
+    }
+    function getAllUrlParams() {
+        var queryParams = new URLSearchParams(window.location.search);
+        var params = {};
+        queryParams.forEach(function(value, key) {
+            params[key] = value;
+        });
+        return params;
+    }
+    function removeParameter(key=false) {
+        let baseUrl = window.location.href.split('?')[0];
+        if(key){
+            let params = new URLSearchParams(window.location.search);
+            params.delete(key);
+            let newUrl = baseUrl + '?' + params.toString();
+            history.replaceState(null, '', newUrl);
+        }else{
+            history.replaceState(null, '', baseUrl);
+        }
+    }
     // Function to update "Delete Selected" button state
     function updateDeleteButtonState() {
         const anyChecked = $('.submark').is(':checked');
         $('#deleteSelected').prop('disabled', !anyChecked);
     }
+    $(document).on('click', "#resetAll", function() {
+        removeParameter();
+        fetchData();
+        $("#resetAll").hide();
+    });
 
     // Event listener for "Select All" checkbox
     $(document).on('change', "#checkAll", function() {
@@ -86,47 +90,51 @@ $(document).ready(function() {
 
     // Initial state update
     updateDeleteButtonState();
-    function fetchSortedData(field, order) {
+    function fetchData() {
+        var params = getAllUrlParams();
         $.ajax({
-            url: '/fetchSortedContacts', // The URL of the server endpoint
+            url: '/allinone', // The URL of the server endpoint
             method: 'GET',
             data: {
-                field: field,
-                order: order,
+                params
                  // _: new Date().getTime() //for cache remove
             },
             success: function(data) {
-                $('#contactsTableBody').html(data);
+                $('#contactsTable').html(data);
+
             },
             error: function(err) {
                 console.error('Error fetching sorted data:', err);
-                // Handle error if necessary
             }
         });
     }
 
+    $(document).on('click', ".pagination .page-item .page-link", function(e) {
+        e.preventDefault(); 
+        if ($(this).closest('.page-item').hasClass('active')) {
+            return; // Do nothing if the link is already active
+        }
+        addOrReplaceUrlParameter("page", $(this).data("page"));
+        addOrReplaceUrlParameter("limit",$(this).data("limit"));
+        fetchData();
+        $("#resetAll").show()
+    });
     let sortOrder = 'asc'; 
     $(document).on('click', ".sort", function(e) {
         e.preventDefault();
         const field = $(this).data('field');
         sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-        fetchSortedData(field, sortOrder);
+        addOrReplaceUrlParameter("sortOrder", sortOrder);
+        addOrReplaceUrlParameter("sortField",field);
+        fetchData();
+        $("#resetAll").show()
     });
     $('#searchForm').on('submit', function(e) {
         e.preventDefault();
-
-        $.ajax({
-            url: '/search',
-            method: 'POST',
-            data: $(this).serialize(),
-            success: function(data) {
-                $('#contactsTableBody').html(data);
-            },
-            error: function(err) {
-                console.error('Error during search:', err);
-                // Handle error if necessary
-            }
-        });
+        addOrReplaceUrlParameter("searchField", $("#searchField").val());
+        addOrReplaceUrlParameter("q", $("#search-q").val());
+        fetchData();
+        $("#resetAll").show()
     });
 
 
