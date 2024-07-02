@@ -4,6 +4,7 @@ const hbs = require('hbs');
 const con = require('./db');
 const flash = require('connect-flash');
 const session = require('express-session');
+const port = process.env.PORT || 3000;
 const app = express()
 
 app.set('view engine', 'hbs');
@@ -464,4 +465,10 @@ app.get('/logout', function (req, res) {
     }
 });
 
-app.listen(3000)
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+} else {
+    module.exports = app;
+}

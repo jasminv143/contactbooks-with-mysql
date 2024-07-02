@@ -5,15 +5,15 @@ const mysql = require('mysql');
 
 const pool = mysql.createPool({
     host: 'localhost',
-    user: 'invigorate',
-    password: 'Invi@123',
+    user: 'root',
+    password: '',
     database: "node_contactBook"
 });
 
 const setupConnection = mysql.createPool({
     host: 'localhost',
-    user: 'invigorate',
-    password: 'Invi@123'
+    user: 'root',
+    password: ''
 });
 
 // Connect to MySQL server and create database if not exists
