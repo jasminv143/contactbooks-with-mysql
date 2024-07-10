@@ -6,6 +6,7 @@ const flash = require('connect-flash');
 const session = require('express-session');
 const port = process.env.PORT || 3000;
 const app = express()
+const moment = require('moment');
 
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, '../templates'));
@@ -15,8 +16,8 @@ app.use('/media', express.static(path.join(__dirname, '../media')));
 hbs.registerPartials(path.join(__dirname, '../templates/partials'))
 
 app.use(session({
-    key: 'session_cookie_name',
-    secret: 'your_secret_key',
+    key: 'contactbooks',
+    secret: 'contactbooks',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -33,6 +34,9 @@ app.use((req, res, next) => {
     res.locals.currentUrl = req.originalUrl;
     res.locals.user = req.session.user;
     next();
+});
+hbs.registerHelper('dateTime', function (date, format) {
+    return moment(date).format(format);
 });
 hbs.registerHelper('eq', function (a, b) {
     return a == b;
@@ -164,7 +168,6 @@ app.get('/home', function (req, res) {
                 query += (searchField) ? ` AND ${searchField} LIKE '%${q}%' ` : '';
                 query += (sortField) ? ` ORDER BY ${sortField} ${sortOrder} ` : '';
                 query += ` LIMIT ${limit} OFFSET ${offset}`;
-            console.log(query);
             con.pool.query(query, (err, results) => {
                 if (err) {
                     console.error(err);
@@ -206,7 +209,6 @@ app.get('/contactform', function (req, res) {
 
                 if (results.length > 0) {
                     currentRecord = results[0];
-                    console.log(currentRecord);
                     res.render("addNewContact", {
                         headerTitle: headerTitle,
                         isUpdate: update,
@@ -431,7 +433,6 @@ app.get('/allinone', (req, res) => {
                 query += ` LIMIT ${limit} OFFSET ${offset}`;
             con.pool.query(query, (err, results) => {
                 if (err) {
-                    console.error(err);
                     req.flash('errorMessage', 'An error occurred while searching.');
                     return res.redirect('/home');
                 }
@@ -463,6 +464,10 @@ app.get('/logout', function (req, res) {
             res.redirect('/home'); // Redirect to the home page or another page if there's an error
         }
     }
+});
+
+app.get('/*', function (req, res) {
+    res.status(404).render('404');
 });
 
 if (require.main === module) {

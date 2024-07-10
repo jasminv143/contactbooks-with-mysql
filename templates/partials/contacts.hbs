@@ -8,7 +8,7 @@
             <th><a href="#" class="sort" data-field="phone_no">Phone Number</a></th> 
             <th><a href="#" class="sort" data-field="email">Email</a></th> 
             <th><a href="#" class="sort" data-field="city">City</a></th> 
-            <th><a href="#" class="sort" data-field="time">Time</a></th> 
+            <th><a href="#" class="sort" data-field="updated_at">Time</a></th> 
             <th colspan='2' align='center' class='text-center'>Action</th> 
         </tr>
     </thead>
@@ -23,7 +23,8 @@
             <td>{{this.phone_no}}</td>
             <td>{{this.email}}</td>
             <td>{{this.city}}</td>
-            <td></td>
+            <td>{{dateTime this.updated_at "D-M-YYYY HH:mm:ss"}}</td>
+
             <td>
                 <a href="/contactform?id={{this.id}}" class="btn btn-primary">Edit</a>
                 <a href="javascript:void(0);" class="btn btn-danger delete-contact" data-id="{{this.id}}">Delete</a>

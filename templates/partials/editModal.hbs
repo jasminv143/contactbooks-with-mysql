@@ -46,43 +46,5 @@
         </div>
     </div>
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
 
-        const changePasswordYes = document.getElementById('changePasswordYes');
-        const passwordFields = document.getElementById('passwordFields');
-
-        const showPasswordCheckbox = document.getElementById('showPasswordCheckbox');
-        const newPasswordField = document.getElementById('newPassword');
-        const oldPasswordField = document.getElementById('oldPassword');
-
-        showPasswordCheckbox.addEventListener('change', function () {
-            const isChecked = this.checked;
-            if (isChecked) {
-                newPasswordField.type = 'text';
-                oldPasswordField.type = 'text';
-            } else {
-                newPasswordField.type = 'password';
-                oldPasswordField.type = 'password';
-            }
-        });
-
-
-        changePasswordYes.addEventListener('change', function () {
-            if (this.checked) {
-                passwordFields.style.display = 'block';
-                newPasswordField.removeAttribute('disabled');
-            }
-        });
-
-        const changePasswordNo = document.getElementById('changePasswordNo');
-
-        changePasswordNo.addEventListener('change', function () {
-            if (this.checked) {
-                passwordFields.style.display = 'none';
-                newPasswordField.setAttribute('disabled', 'disabled');
-            }
-        });
-    });
-</script>
 
