@@ -1,19 +1,19 @@
 const mysql = require('mysql');
-
+const dotenv = require('dotenv');
 // Create a connection pool for initial database creation
-
+dotenv.config();
 
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'invigorate',
-    password: 'Invi@123',
-    database: "node_contactBook"
+    host: process.env.DB_HOST || "localhost",
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || 'node_contactBook'
 });
 
 const setupConnection = mysql.createPool({
-    host: 'localhost',
-    user: 'invigorate',
-    password: 'Invi@123'
+    host: process.env.DB_HOST || "localhost",
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
 });
 
 // Connect to MySQL server and create database if not exists
@@ -25,24 +25,24 @@ setupConnection.getConnection((err, connection) => {
 
     console.log('Database connection successful.');
 
-    connection.query('CREATE DATABASE IF NOT EXISTS node_contactBook', (err) => {
+    connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`, (err) => {
         if (err) {
             console.error('Failed to create database:', err);
             connection.release(); // Release the connection on error
             return;
         }
 
-        console.log('Database node_contactBook created or already exists.');
+        console.log(`Database ${process.env.DB_NAME} created or already exists.`);
 
         // Switch to 'node_contactBook' database
-        connection.query('USE node_contactBook', (err) => {
+        connection.query(`USE ${process.env.DB_NAME}`, (err) => {
             if (err) {
                 console.error('Failed to switch to database:', err);
                 connection.release(); // Release the connection on error
                 return;
             }
 
-            console.log('Switched to database node_contactBook.');
+            console.log(`Switched to database ${process.env.DB_NAME}.`);
 
             // Create 'users' table if not exists
             const createUserTable = `CREATE TABLE IF NOT EXISTS users (

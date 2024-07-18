@@ -1,152 +1,338 @@
-const mysql = require('mysql');
+const express = require('express');
+const router = express.Router();
+const con = require('./db');
+const bcrypt = require('bcryptjs');
+const helpers = require('./helpers');
 
-// Create a connection pool for initial database creation
-
-
-const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'invigorate',
-    password: 'Invi@123',
-    database: "node_contactBook"
+router.get('/', helpers.ensureNotLoggedIn, (req, res) => {
+    res.render('index', { headerTitle: 'ContactBook - Login' });
 });
 
-const setupConnection = mysql.createPool({
-    host: 'localhost',
-    user: 'invigorate',
-    password: 'Invi@123'
-});
-
-// Connect to MySQL server and create database if not exists
-setupConnection.getConnection((err, connection) => {
-    if (err) {
-        console.error('Database connection failed:', err);
-        return;
-    }
-
-    console.log('Database connection successful.');
-
-    connection.query('CREATE DATABASE IF NOT EXISTS node_contactBook', (err) => {
+router.post('/', helpers.ensureNotLoggedIn, (req, res) => {
+    const { username, password } = req.body;
+    con.pool.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
         if (err) {
-            console.error('Failed to create database:', err);
-            connection.release(); // Release the connection on error
-            return;
+            console.error(err);
+            req.flash('errorMessage', 'An error occurred during login.');
+            res.redirect('/');
+        } else if (results.length > 0 && bcrypt.compareSync(password, results[0].password)) {
+            req.flash('successMessage', 'Login successfully!');
+            req.session.user = results[0];
+            res.redirect('/home');
+        } else {
+            req.flash('errorMessage', 'Invalid username or password.');
+            res.redirect('/');
         }
+    });
+});
 
-        console.log('Database node_contactBook created or already exists.');
+router.get('/register', helpers.ensureNotLoggedIn, (req, res) => {
+    res.render('register', { headerTitle: 'ContactBook - Register' });
+});
 
-        // Switch to 'node_contactBook' database
-        connection.query('USE node_contactBook', (err) => {
+router.post('/register', helpers.ensureNotLoggedIn, (req, res) => {
+    req.body.password = bcrypt.hashSync(req.body.password, 5);
+    con.insertRecord('users', req.body)
+        .then(() => {
+            req.flash('successMessage', 'User registered successfully!');
+            res.redirect('/');
+        })
+        .catch(err => {
+            console.error(err);
+            req.flash('errorMessage', 'User registration failed.');
+            res.redirect('/register');
+        });
+});
+
+router.get('/home', helpers.ensureLoggedIn, (req, res) => {
+    const userId = req.session.user.id;
+    const params = req.query || {};
+    const page = parseInt(params.page) || 1;
+    const limit = parseInt(params.limit) || 10;
+    const offset = (page - 1) * limit;
+    const sortOrder = params.sortOrder || null;
+    const sortField = params.sortField || null;
+    const searchField = params.searchField || null;
+    const q = params.q || null;
+
+    let countQuery = `SELECT COUNT(*) AS count FROM contacts WHERE uid = ${userId}`;
+    if (searchField) countQuery += ` AND ${searchField} LIKE '%${q}%'`;
+
+    con.pool.query(countQuery, (err, countResults) => {
+        if (err) {
+            console.error(err);
+            req.flash('errorMessage', 'Failed to load contacts.');
+            return res.redirect('/home');
+        }
+        const totalContacts = countResults[0].count;
+        const totalPages = Math.ceil(totalContacts / limit);
+
+        let query = `SELECT * FROM contacts WHERE uid = ${userId}`;
+        if (searchField) query += ` AND ${searchField} LIKE '%${q}%'`;
+        if (sortField) query += ` ORDER BY ${sortField} ${sortOrder}`;
+        query += ` LIMIT ${limit} OFFSET ${offset}`;
+
+        con.pool.query(query, (err, results) => {
             if (err) {
-                console.error('Failed to switch to database:', err);
-                connection.release(); // Release the connection on error
-                return;
+                console.error(err);
+                req.flash('errorMessage', 'An error occurred while searching.');
+                return res.redirect('/home');
             }
-
-            console.log('Switched to database node_contactBook.');
-
-            // Create 'users' table if not exists
-            const createUserTable = `CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(100) NOT NULL,
-                email VARCHAR(100) UNIQUE NOT NULL,
-                password VARCHAR(100) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            )`;
-            
-            connection.query(createUserTable, (err) => {
-                if (err) {
-                    console.error('Failed to create users table:', err);
-                    connection.release(); // Release the connection on error
-                    return;
-                }
-
-                console.log('Users table created or already exists.');
-
-                // Create 'contacts' table if not exists
-                const createContactsTable = `CREATE TABLE IF NOT EXISTS contacts (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    uid INT,
-                    firstname VARCHAR(100) NOT NULL,
-                    lastname VARCHAR(100) NOT NULL,
-                    gender ENUM('Male', 'Female', 'Other'),
-                    phone_no VARCHAR(20),
-                    email VARCHAR(100),
-                    city VARCHAR(100),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    FOREIGN KEY (uid) REFERENCES users(id) ON DELETE CASCADE
-                )`;
-                
-                connection.query(createContactsTable, (err) => {
-                    if (err) {
-                        console.error('Failed to create contacts table:', err);
-                    } else {
-                        console.log('Contacts table created or already exists.');
-                    }
-
-                    connection.release(); // Release the connection
-                });
+            res.render('home', {
+                headerTitle: 'ContactBook - Home',
+                contacts: results,
+                currentPage: page,
+                totalPages: totalPages,
+                limit: limit
             });
         });
     });
 });
 
-const insertRecord = (tableName, insertData) => {
-    return new Promise((resolve, reject) => {
-        const keys = Object.keys(insertData);
-        const values = Object.values(insertData);
+router.get('/contactform', helpers.ensureLoggedIn, (req, res) => {
+    const headerTitle = req.query.id ? 'ContactBook - Edit Contact' : 'ContactBook - Add New Contact';
+    const update = !!req.query.id;
+    const userId = req.session.user.id;
+    const contactId = req.query.id;
 
-        const placeholders = keys.map(() => '?').join(',');
-        const query = `INSERT INTO ${tableName} (${keys.join(',')}) VALUES (${placeholders})`;
-        pool.query(query, values, (err, results) => {
+    if (update) {
+        con.pool.query('SELECT * FROM contacts WHERE uid = ? AND id = ?', [userId, contactId], (err, results) => {
             if (err) {
-                reject(err);
-            } else {
-                resolve(results);
+                console.error(err);
+                req.flash('errorMessage', 'Failed to load contact.');
+                return res.redirect('/home');
             }
+            res.render('addNewContact', {
+                headerTitle: headerTitle,
+                isUpdate: update,
+                currentRecord: results[0] || null
+            });
         });
-    });
-};
-const deleteRecord = (tableName, conditions) => {
-    return new Promise((resolve, reject) => {
-        if (!tableName || typeof conditions !== 'object' || Object.keys(conditions).length === 0) {
-            reject(new Error('Invalid arguments provided.'));
-            return;
+    } else {
+        res.render('addNewContact', {
+            headerTitle: headerTitle,
+            isUpdate: update,
+            currentRecord: null
+        });
+    }
+});
+
+router.post('/contactform', helpers.ensureLoggedIn, (req, res) => {
+    const userId = req.session.user.id;
+    if (req.body.id) {
+        const updateData = {
+            firstname: req.body.firstname,
+            lastname: req.body.lastname,
+            phone_no: req.body.phone_no,
+            email: req.body.email,
+            gender: req.body.gender,
+            city: req.body.city
+        };
+        const contactId = req.body.id;
+
+        con.pool.query('UPDATE contacts SET ? WHERE id = ? AND uid = ?', [updateData, contactId, userId], (err, results) => {
+            if (err) {
+                console.error(err);
+                req.flash('errorMessage', 'Failed to update contact.');
+                return res.redirect('/home');
+            }
+            if (results.affectedRows > 0) {
+                req.flash('successMessage', 'Contact updated successfully!');
+            } else {
+                req.flash('errorMessage', 'Contact not found or you do not have permission to edit this contact.');
+            }
+
+            res.redirect('/home');
+        });
+    } else {
+        req.body.uid = userId;
+        con.insertRecord('contacts', req.body)
+            .then(() => {
+                req.flash('successMessage', 'Contact added successfully!');
+                res.redirect('/home');
+            })
+            .catch(err => {
+                console.error(err);
+                req.flash('errorMessage', 'Failed to add contact.');
+                res.redirect('/contactform');
+            });
+    }
+});
+
+router.delete('/deleteContact', helpers.ensureLoggedIn, (req, res) => {
+    const contactId = req.body.id;
+    const userId = req.session.user.id;
+
+    con.deleteRecord('contacts', { id: contactId, uid: userId })
+        .then(results => {
+            if (results.affectedRows > 0) {
+                res.json({ status: 'success', message: 'Contact deleted successfully.' });
+            } else {
+                res.json({ status: 'error', message: 'Contact not found or you do not have permission to delete this contact.' });
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            res.json({ status: 'error', message: 'Failed to delete contact.' });
+        });
+});
+
+router.delete('/deleteContacts', helpers.ensureLoggedIn, (req, res) => {
+    const contactIds = req.body.ids;
+    const userId = req.session.user.id;
+
+    con.deleteRecord('contacts', { id: contactIds, uid: userId })
+        .then(results => {
+            const affectedRows = results.affectedRows;
+            if (affectedRows > 0) {
+                res.json({
+                    status: 'success',
+                    message: `${affectedRows} contact(s) deleted successfully.`
+                });
+            } else {
+                res.json({ 
+                    status:"error", 
+                    message: 'No contacts were deleted.' 
+                });
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            res.json({ status: 'error', message: 'Failed to delete contacts.' });
+        });
+});
+
+router.get('/profile', helpers.ensureLoggedIn, (req, res) => {
+    res.render('profile', { headerTitle: 'ContactBook - Profile' });
+});
+
+router.post('/deleteUser', helpers.ensureLoggedIn, (req, res) => {
+    const { password } = req.body;
+    if (bcrypt.compareSync(password, req.session.user.password)) {
+        const userId = req.session.user.id;
+
+        con.deleteRecord('users', { id: userId })
+            .then(() => {
+                req.flash('successMessage', 'User deleted successfully.');
+                delete req.session.user;
+                res.redirect('/');
+            })
+            .catch(err => {
+                console.error(err);
+                req.flash('errorMessage', 'Failed to delete user.');
+                res.redirect('/profile');
+            });
+    } else {
+        req.flash('errorMessage', 'Incorrect password.');
+        res.redirect('/profile');
+    }
+});
+
+router.post('/profileEdit', helpers.ensureLoggedIn, (req, res) => {
+    const { username, email, newPassword, oldPassword, changePassword } = req.body;
+    const userId = req.session.user.id;
+
+    if(!bcrypt.compareSync(oldPassword, req.session.user.password)){
+        req.flash('errorMessage', 'Incorrect old password.');
+        return res.redirect('/profile');
+    }
+    con.pool.query('SELECT * FROM users WHERE email = ? AND id <> ?', [email, userId], (err, results) => {
+        if (err) {
+            console.error(err);
+            req.flash('errorMessage', 'An error occurred.');
+            return res.redirect('/profile');
         }
 
-        const keys = Object.keys(conditions);
-        const values = Object.values(conditions);
-
-        // Construct the WHERE clause dynamically
-        const whereClause = keys.map(key => {
-            if (Array.isArray(conditions[key])) {
-                // Handle array values for IN clause
-                return `${key} IN (${conditions[key].map(() => '?').join(', ')})`;
-            } else {
-                // Handle single value for equality check
-                return `${key} = ?`;
-            }
-        }).join(' AND ');
-
-        const query = `DELETE FROM ${tableName} WHERE ${whereClause}`;
-
-        // Flatten the values array if conditions[key] is an array
-        const flattenedValues = keys.reduce((acc, key) => {
-            if (Array.isArray(conditions[key])) {
-                return [...acc, ...conditions[key]];
-            } else {
-                return [...acc, conditions[key]];
-            }
-        }, []);
-
-        pool.query(query, flattenedValues, (err, results) => {
+        if (results.length > 0) {
+            req.flash('errorMessage', 'Email is already in use.');
+            return res.redirect('/profile');
+        }
+        let updateData = {
+            username: username,
+            email: email
+        };
+        if (changePassword === 'yes') {
+            updateData.password = bcrypt.hashSync(newPassword, 5);
+        }
+        con.pool.query('UPDATE users SET ? WHERE id = ?', [updateData, userId], (err, results) => {
             if (err) {
-                reject(err);
+                console.error(err);
+                req.flash('errorMessage', 'Failed to update user.');
             } else {
-                resolve(results);
+                req.flash('successMessage', 'User updated successfully.');
+                // Optionally update session with new user data
+                req.session.user.username = username;
+                req.session.user.email = email;
             }
+            res.redirect('/profile');
         });
     });
-};
-module.exports = { pool,insertRecord,deleteRecord };
+});
+
+router.get('/allinone', helpers.ensureLoggedIn, (req, res) => {
+    const userId = req.session.user.id;
+    const params = req.query || {};
+    const page = parseInt(params.page) || 1;
+    const limit = parseInt(params.limit) || 10;
+    const offset = (page - 1) * limit;
+    const sortOrder = params.sortOrder || null;
+    const sortField = params.sortField || null;
+    const searchField = params.searchField || null;
+    const q = params.q || null;
+
+    let countQuery = `SELECT COUNT(*) AS count FROM contacts WHERE uid = ${userId}`;
+    if (searchField) countQuery += ` AND ${searchField} LIKE '%${q}%'`;
+
+    con.pool.query(countQuery, (err, countResults) => {
+        if (err) {
+            console.error(err);
+            req.flash('errorMessage', 'Failed to load contacts.');
+            return res.redirect('/');
+        }
+        const totalContacts = countResults[0].count;
+        const totalPages = Math.ceil(totalContacts / limit);
+
+        let query = `SELECT * FROM contacts WHERE uid = ${userId}`;
+        if (searchField) query += ` AND ${searchField} LIKE '%${q}%'`;
+        if (sortField) query += ` ORDER BY ${sortField} ${sortOrder}`;
+        query += ` LIMIT ${limit} OFFSET ${offset}`;
+
+        con.pool.query(query, (err, results) => {
+            if (err) {
+                req.flash('errorMessage', 'An error occurred while searching.');
+                return res.redirect('/home');
+            }
+            
+            res.render('partials/contacts', {
+                contacts: results,
+                totalPages: totalPages,
+                limit: limit,
+                currentPage: page
+            }, (err, html) => {
+                if (err) {
+                    console.error(err);
+                    req.flash('errorMessage', 'An error occurred while rendering the results.');
+                    return res.redirect('/home');
+                }
+                res.send(html);
+            });
+        });
+    });
+});
+
+router.get('/logout', helpers.ensureLoggedIn, (req, res) => {
+    if(delete req.session.user) {
+        req.flash('successMessage', 'Logged out successfully.');
+        res.redirect('/'); 
+    } else {
+        console.error('Error destroying session:', err);
+        req.flash('errorMessage', 'Error logging out. Please try again.');
+        res.redirect('/home'); 
+    }
+});
+
+router.get('/*', (req, res) => {
+    res.status(404).render('404');
+});
+
+module.exports = router;
